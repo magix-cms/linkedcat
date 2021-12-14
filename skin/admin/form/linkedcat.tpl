@@ -22,11 +22,12 @@
                         </div>
                         <div id="filter-cats" class="list-to-filter tree-display">
                             <ul class="list-unstyled">
-                                {foreach $cats as $c}
+                                {*{foreach $cats as $c}
                                     <li class="filter-item items" data-filter="{$c.name_cat}" data-value="{$c.id_cat}" data-id="{$c.id_cat}">
                                         {$c.name_cat}&nbsp;{if $c.id_parent != '0'}<small>({$c.id_cat})</small>{/if}
                                     </li>
-                                {/foreach}
+                                {/foreach}*}
+                                {include file="loop/category.tpl" cats=$cats}
                             </ul>
                             <div class="no-search-results">
                                 <div class="alert alert-warning" role="alert"><i class="fa fa-warning margin-right-sm"></i>{#hc_no_entry_for#|sprintf:"<strong>'<span></span>'</strong>"}</div>
@@ -39,7 +40,8 @@
         </div>
     </div>
     <div class="form-group">
-        <input type="hidden" name="id" value="{$page.id_attr}">
+        <input type="hidden" name="linkedData[id_module]" value="{if isset($page.id_cat)}{$page.id_cat}{else}{$page.id_pages}{/if}">
+        <input type="hidden" name="linkedData[module_linked]" value="{$smarty.get.controller}">
         <button class="btn btn-main-theme" type="submit" name="action" value="add"><span class="fa fa-plus"></span> {#add#}</button>
     </div>
 </fieldset>

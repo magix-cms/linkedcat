@@ -36,7 +36,7 @@ include_once ('db.php');
 class plugins_linkedcat_core extends plugins_linkedcat_db{
 
     protected $template,$modelPlugins,$message,$arrayTools,$data, $modelLanguage, $collectionLanguage;
-    public $controller,$plugins,$plugin,$cat_id,$edit,$id_pages;
+    public $controller,$plugins,$plugin,$cat_id,$edit,$id_pages,$linkedcat;
 
     public function __construct($t = null)
     {
@@ -59,7 +59,6 @@ class plugins_linkedcat_core extends plugins_linkedcat_db{
         if (http_request::isGet('edit')) $this->edit = $formClean->numeric($_GET['edit']);
         if (http_request::isGet('id')) $this->id_pages = $formClean->simpleClean($_GET['id']);
         elseif (http_request::isPost('id')) $this->id_pages = $formClean->simpleClean($_POST['id']);
-        if (http_request::isPost('cat_id')) $this->cat_id = $formClean->simpleClean($_POST['cat_id']);
     }
     /**
      * Assign data to the defined variable or return the data
@@ -103,50 +102,17 @@ class plugins_linkedcat_core extends plugins_linkedcat_db{
         $this->template->assign('cats',$lists);
     }
     /**
-     * Update data
-     * @param $data
-     * @throws Exception
-     */
-    private function add($data)
-    {
-        switch ($data['type']) {
-            case 'pages':
-                parent::insert(
-                    array(
-                        'context' => $data['context'],
-                        'type' => $data['type']
-                    ),
-                    $data['data']
-                );
-                break;
-        }
-    }
-
-    /**
-     * Mise a jour des données
-     * @param $data
-     * @throws Exception
-     */
-    private function upd($data)
-    {
-        switch ($data['type']) {
-            case 'pages':
-                parent::update(
-                    array(
-                        'context' => $data['context'],
-                        'type' => $data['type']
-                    ),
-                    $data['data']
-                );
-                break;
-        }
-    }
-    /**
      * Execution du plugin dans un ou plusieurs modules core
      */
     public function run(){
         if(isset($this->controller)){
             $this->getCategory();
+            $defaultLanguage = $this->collectionLanguage->fetchData(array('context'=>'one','type'=>'default'));
+            $this->getItems('linkedcat',array(
+                'default_lang'=>$defaultLanguage['id_lang'],
+                'id_module'=> $this->edit,
+                'module_linked'=> $this->controller
+            ),'all');
             $this->modelPlugins->display('form/link-category.tpl');
         }
     }

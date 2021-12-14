@@ -78,14 +78,37 @@ class plugins_linkedcat_db
 								JOIN mc_catalog_cat_content AS c ON (p.id_cat = c.id_cat)
 								JOIN mc_lang AS lang ON ( c.id_lang = lang.id_lang )
 								WHERE c.id_lang = :default_lang AND lc.id_module = :id_module AND lc.module_linked = :module_linked
-							ORDER BY lc.order_linked DESC";
+							ORDER BY lc.order_linked ASC";
+                    break;
+                case 'order':
+                    $sql = 'SELECT
+								id_cat,
+								order_linked
+							FROM mc_linkedcat WHERE id_module = :id_module 
+							                    AND module_linked = :module_linked ORDER BY order_linked ASC';
                     break;
             }
 
             return $sql ? component_routing_db::layer()->fetchAll($sql, $params) : null;
         } elseif ($config['context'] === 'one') {
             switch ($config['type']) {
-
+                case 'lastCat':
+                    $sql = "SELECT lc.id_linked, p.id_cat, c.name_cat
+							FROM mc_linkedcat AS lc
+							    JOIN mc_catalog_cat AS p on (p.id_cat = lc.id_cat)
+								JOIN mc_catalog_cat_content AS c ON (p.id_cat = c.id_cat)
+								JOIN mc_lang AS lang ON ( c.id_lang = lang.id_lang )
+								WHERE c.id_lang = :default_lang AND lc.id_module = :id_module 
+								  AND lc.module_linked = :module_linked
+							ORDER BY lc.id_linked DESC LIMIT 0,1";
+                    break;
+                case 'catId':
+                    $sql = "SELECT 
+								GROUP_CONCAT(`id_cat` SEPARATOR ',') as ids
+							FROM mc_linkedcat WHERE module_linked = :module_linked 
+							                    AND id_module = :id_module 
+                                ORDER BY order_linked ASC";
+                    break;
             }
 
             return $sql ? component_routing_db::layer()->fetch($sql, $params) : null;
@@ -103,7 +126,10 @@ class plugins_linkedcat_db
         $sql = '';
 
         switch ($config['type']) {
-
+            case 'cat':
+                $sql = "INSERT INTO mc_linkedcat (id_cat, module_linked, id_module, order_linked)
+                        SELECT :id_cat, :module, :id_module, COUNT(id_linked) FROM mc_linkedcat WHERE module_linked = '".$params['module']."'";
+                break;
         }
 
         if($sql === '') return 'Unknown request asked';
@@ -128,7 +154,11 @@ class plugins_linkedcat_db
         $sql = '';
 
         switch ($config['type']) {
-
+            case 'order':
+                $sql = 'UPDATE mc_linkedcat 
+						SET order_linked = :order_linked
+						WHERE id_linked = :id_linked';
+                break;
         }
 
         if($sql === '') return 'Unknown request asked';
@@ -152,6 +182,10 @@ class plugins_linkedcat_db
         $sql = '';
 
         switch ($config['type']) {
+            case 'delCat':
+                $sql = 'DELETE FROM mc_linkedcat WHERE id_linked IN('.$params['id'].')';
+                $params = [];
+                break;
         }
 
         if($sql === '') return 'Unknown request asked';
