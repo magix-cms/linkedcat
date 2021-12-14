@@ -111,7 +111,7 @@ class plugins_linkedcat_public extends plugins_linkedcat_db
             }
         }
 
-        // *** Mix pages and categories to fit the sectors order
+        // *** Mix categories to fit the sectors order
         $arr = array();
         foreach ($order as $item) {
             $ref = array();
